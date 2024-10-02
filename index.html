@@ -16,7 +16,7 @@
 
     <script>
         async function loadData() {
-            const response = await fetch('../data/pluviometro.csv');  // Ruta al archivo CSV
+            const response = await fetch('../data/repo.-pluv.csv');  // Ruta al archivo CSV
             const data = await response.text();
 
             const rows = data.split('\n').slice(1);  // Ignora la primera fila (cabeceras)
