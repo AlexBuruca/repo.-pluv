@@ -1,3 +1,7 @@
+d3.csv("data/pluviometro_test_data.csv").then(function(data) {
+    console.log(data); // Verifica si los datos se cargan correctamente
+    // Aquí puedes agregar la lógica para graficar los datos
+});
 timestamp,nivel_agua_mm,temperatura_c,humedad_relativa
 2024-09-21,12.3,25.6,60
 2024-09-21,13.5,26.0,65
