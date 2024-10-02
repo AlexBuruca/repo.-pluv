@@ -86,3 +86,23 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pluviometro Data Visualization</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+    <h1>Visualización de datos del pluviómetro</h1>
+    <script>
+        d3.csv("data/pluviometro_test_data.csv").then(function(data) {
+            console.log(data);  // Asegúrate de que este paso funciona para verificar la carga
+            // Lógica de visualización de gráficos aquí
+        }).catch(function(error) {
+            console.log("Error al cargar el archivo CSV:", error);
+        });
+    </script>
+</body>
+</html>
