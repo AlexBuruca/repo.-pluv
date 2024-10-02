@@ -1,1 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos del Pluviómetro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Visualización de Datos del Pluviómetro</h1>
+    
+    <!-- Gráficas -->
+    <canvas id="nivelAguaChart"></canvas>
+    <canvas id="temperaturaChart"></canvas>
+    <canvas id="humedadChart"></canvas>
+
+    <script>
+        async function loadData() {
+            const response = await fetch('../data/pluviometro.csv');  // Ruta al archivo CSV
+            const data = await response.text();
+
+            const rows = data.split('\n').slice(1);  // Ignora la primera fila (cabeceras)
+            const timestamps = [];
+            const nivelAgua = [];
+            const temperatura = [];
+            const humedad = [];
+
+            rows.forEach(row => {
+                const cols = row.split(',');
+                timestamps.push(cols[0]);  // Fecha y hora
+                nivelAgua.push(parseFloat(cols[1]));  // Nivel de agua
+                temperatura.push(parseFloat(cols[2]));  // Temperatura
+                humedad.push(parseFloat(cols[3]));  // Humedad
+            });
+
+            return { timestamps, nivelAgua, temperatura, humedad };
+        }
+
+        async function createCharts() {
+            const data = await loadData();
+
+            // Gráfico de Nivel de Agua
+            new Chart(document.getElementById('nivelAguaChart'), {
+                type: 'line',
+                data: {
+                    labels: data.timestamps,
+                    datasets: [{
+                        label: 'Nivel de Agua (mm)',
+                        data: data.nivelAgua,
+                        borderColor: 'blue',
+                        fill: false
+                    }]
+                }
+            });
+
+            // Gráfico de Temperatura
+            new Chart(document.getElementById('temperaturaChart'), {
+                type: 'line',
+                data: {
+                    labels: data.timestamps,
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: data.temperatura,
+                        borderColor: 'red',
+                        fill: false
+                    }]
+                }
+            });
+
+            // Gráfico de Humedad Relativa
+            new Chart(document.getElementById('humedadChart'), {
+                type: 'line',
+                data: {
+                    labels: data.timestamps,
+                    datasets: [{
+                        label: 'Humedad Relativa (%)',
+                        data: data.humedad,
+                        borderColor: 'green',
+                        fill: false
+                    }]
+                }
+            });
+        }
+
+        createCharts();
+    </script>
+</body>
+</html>
 
