@@ -1,4 +1,4 @@
-d3.csv("data/pluviometro_test_data.csv").then(function(data) {
+d3.csv("data/pluviometro.csv").then(function(data) {
     console.log(data); // Verifica si los datos se cargan correctamente
     // Aquí puedes agregar la lógica para graficar los datos
 });
