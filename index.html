@@ -1,92 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Datos del Pluviómetro</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <title>Pluviómetro</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .line {
+      fill: none;
+      stroke-width: 2px;
+    }
+    .axis-label {
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Visualización de Datos del Pluviómetro</h1>
-    
-    <!-- Gráficas -->
-    <canvas id="nivelAguaChart"></canvas>
-    <canvas id="temperaturaChart"></canvas>
-    <canvas id="humedadChart"></canvas>
+  <h2>📊 Registro del Pluviómetro</h2>
+  <svg width="800" height="500"></svg>
 
-    <script>
-        async function loadData() {
-            const response = await fetch('../data/pluviometro.csv');  // Ruta al archivo CSV
-            const data = await response.text();
+  <script>
+    const svg = d3.select("svg"),
+          margin = {top: 40, right: 100, bottom: 50, left: 60},
+          width = +svg.attr("width") - margin.left - margin.right,
+          height = +svg.attr("height") - margin.top - margin.bottom;
 
-            const rows = data.split('\n').slice(1);  // Ignora la primera fila (cabeceras)
-            const timestamps = [];
-            const nivelAgua = [];
-            const temperatura = [];
-            const humedad = [];
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-            rows.forEach(row => {
-                const cols = row.split(',');
-                timestamps.push(cols[0]);  // Fecha y hora
-                nivelAgua.push(parseFloat(cols[1]));  // Nivel de agua
-                temperatura.push(parseFloat(cols[2]));  // Temperatura
-                humedad.push(parseFloat(cols[3]));  // Humedad
-            });
+    // Escalas
+    const x = d3.scaleTime().range([0, width]);
+    const y = d3.scaleLinear().range([height, 0]);
 
-            return { timestamps, nivelAgua, temperatura, humedad };
-        }
+    // Colores para cada variable
+    const color = {
+      "nivel_agua_mm": "steelblue",
+      "temperatura_c": "tomato",
+      "humedad_relativa": "green"
+    };
 
-        async function createCharts() {
-            const data = await loadData();
+    // Línea generadora
+    const line = d3.line()
+      .x(d => x(d.timestamp))
+      .y(d => y(d.value));
 
-            // Gráfico de Nivel de Agua
-            new Chart(document.getElementById('nivelAguaChart'), {
-                type: 'line',
-                data: {
-                    labels: data.timestamps,
-                    datasets: [{
-                        label: 'Nivel de Agua (mm)',
-                        data: data.nivelAgua,
-                        borderColor: 'blue',
-                        fill: false
-                    }]
-                }
-            });
+    d3.csv("data/pluviometro.csv").then(function(data) {
+      // Parseo de fecha y valores numéricos
+      data.forEach(d => {
+        d.timestamp = d3.timeParse("%Y-%m-%d")(d.timestamp);
+        d.nivel_agua_mm = +d.nivel_agua_mm;
+        d.temperatura_c = +d.temperatura_c;
+        d.humedad_relativa = +d.humedad_relativa;
+      });
 
-            // Gráfico de Temperatura
-            new Chart(document.getElementById('temperaturaChart'), {
-                type: 'line',
-                data: {
-                    labels: data.timestamps,
-                    datasets: [{
-                        label: 'Temperatura (°C)',
-                        data: data.temperatura,
-                        borderColor: 'red',
-                        fill: false
-                    }]
-                }
-            });
+      // Reestructurar datos en formato "tidy"
+      const keys = ["nivel_agua_mm", "temperatura_c", "humedad_relativa"];
+      const dataset = keys.map(name => {
+        return {
+          name: name,
+          values: data.map(d => ({timestamp: d.timestamp, value: d[name]}))
+        };
+      });
 
-            // Gráfico de Humedad Relativa
-            new Chart(document.getElementById('humedadChart'), {
-                type: 'line',
-                data: {
-                    labels: data.timestamps,
-                    datasets: [{
-                        label: 'Humedad Relativa (%)',
-                        data: data.humedad,
-                        borderColor: 'green',
-                        fill: false
-                    }]
-                }
-            });
-        }
+      // Escalas
+      x.domain(d3.extent(data, d => d.timestamp));
+      y.domain([
+        0,
+        d3.max(dataset, serie => d3.max(serie.values, d => d.value))
+      ]);
 
-        createCharts();
-    </script>
+      // Ejes
+      g.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).ticks(6));
+
+      g.append("g")
+        .call(d3.axisLeft(y));
+
+      // Dibujar líneas
+      dataset.forEach(serie => {
+        g.append("path")
+          .datum(serie.values)
+          .attr("class", "line")
+          .attr("d", line)
+          .attr("stroke", color[serie.name]);
+      });
+
+      // Leyenda
+      const legend = g.selectAll(".legend")
+        .data(keys)
+        .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", (d, i) => `translate(0,${i*20})`);
+
+      legend.append("rect")
+        .attr("x", width + 20)
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", d => color[d]);
+
+      legend.append("text")
+        .attr("x", width + 35)
+        .attr("y", 9)
+        .text(d => d);
+    });
+  </script>
 </body>
 </html>
-d3.csv("data/pluviometro.csv").then(function(data) {
-    console.log(data); // Verifica si los datos se cargan correctamente
-    // Aquí puedes agregar la lógica para graficar los datos
-});
+
