@@ -1,111 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Pluviómetro</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    .line {
-      fill: none;
-      stroke-width: 2px;
-    }
-    .axis-label {
-      font-size: 12px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Pluviómetro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        a {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 25px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        a:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-  <h2>📊 Registro del Pluviómetro</h2>
-  <svg width="800" height="500"></svg>
+    <h1>📊 Proyecto Pluviómetro</h1>
+    <p>Bienvenido al proyecto de monitoreo de lluvia, temperatura y humedad.</p>
 
-  <script>
-    const svg = d3.select("svg"),
-          margin = {top: 40, right: 100, bottom: 50, left: 60},
-          width = +svg.attr("width") - margin.left - margin.right,
-          height = +svg.attr("height") - margin.top - margin.bottom;
+    <h2>Visualizaciones</h2>
+    <a href="visualizaciones/grafico.html" target="_blank">Ver Gráficas</a>
 
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // Escalas
-    const x = d3.scaleTime().range([0, width]);
-    const y = d3.scaleLinear().range([height, 0]);
-
-    // Colores para cada variable
-    const color = {
-      "nivel_agua_mm": "steelblue",
-      "temperatura_c": "tomato",
-      "humedad_relativa": "green"
-    };
-
-    // Línea generadora
-    const line = d3.line()
-      .x(d => x(d.timestamp))
-      .y(d => y(d.value));
-
-    d3.csv("data/pluviometro.csv").then(function(data) {
-      // Parseo de fecha y valores numéricos
-      data.forEach(d => {
-        d.timestamp = d3.timeParse("%Y-%m-%d")(d.timestamp);
-        d.nivel_agua_mm = +d.nivel_agua_mm;
-        d.temperatura_c = +d.temperatura_c;
-        d.humedad_relativa = +d.humedad_relativa;
-      });
-
-      // Reestructurar datos en formato "tidy"
-      const keys = ["nivel_agua_mm", "temperatura_c", "humedad_relativa"];
-      const dataset = keys.map(name => {
-        return {
-          name: name,
-          values: data.map(d => ({timestamp: d.timestamp, value: d[name]}))
-        };
-      });
-
-      // Escalas
-      x.domain(d3.extent(data, d => d.timestamp));
-      y.domain([
-        0,
-        d3.max(dataset, serie => d3.max(serie.values, d => d.value))
-      ]);
-
-      // Ejes
-      g.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).ticks(6));
-
-      g.append("g")
-        .call(d3.axisLeft(y));
-
-      // Dibujar líneas
-      dataset.forEach(serie => {
-        g.append("path")
-          .datum(serie.values)
-          .attr("class", "line")
-          .attr("d", line)
-          .attr("stroke", color[serie.name]);
-      });
-
-      // Leyenda
-      const legend = g.selectAll(".legend")
-        .data(keys)
-        .enter().append("g")
-        .attr("class", "legend")
-        .attr("transform", (d, i) => `translate(0,${i*20})`);
-
-      legend.append("rect")
-        .attr("x", width + 20)
-        .attr("width", 10)
-        .attr("height", 10)
-        .style("fill", d => color[d]);
-
-      legend.append("text")
-        .attr("x", width + 35)
-        .attr("y", 9)
-        .text(d => d);
-    });
-  </script>
+    <h2>Datos</h2>
+    <a href="data/pluviometro.csv" target="_blank">Descargar CSV</a>
 </body>
 </html>
-
